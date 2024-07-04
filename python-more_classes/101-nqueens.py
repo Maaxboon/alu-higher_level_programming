@@ -1,5 +1,6 @@
-#!/usr/bin/python3
-"""Solves the N-queens puzzle.
+#!/usr/bin
+"""
+Solves the N-queens puzzle.
 
 Determines all possible solutions to placing N
 N non-attacking queens on an NxN chessboard.
@@ -25,14 +26,14 @@ def init_board(n):
     board = []
     [board.append([]) for i in range(n)]
     [row.append(' ') for i in range(n) for row in board]
-    return (board)
+    return board
 
 
 def board_deepcopy(board):
     """Return a deepcopy of a chessboard."""
     if isinstance(board, list):
         return list(map(board_deepcopy, board))
-    return (board)
+    return board
 
 
 def get_solution(board):
@@ -43,7 +44,7 @@ def get_solution(board):
             if board[r][c] == "Q":
                 solution.append([r, c])
                 break
-    return (solution)
+    return solution
 
 
 def xout(board, row, col):
@@ -112,7 +113,7 @@ def recursive_solve(board, row, queens, solutions):
     """
     if queens == len(board):
         solutions.append(get_solution(board))
-        return (solutions)
+        return solutions
 
     for c in range(len(board)):
         if board[row][c] == " ":
@@ -122,21 +123,22 @@ def recursive_solve(board, row, queens, solutions):
             solutions = recursive_solve(tmp_board, row + 1,
                                         queens + 1, solutions)
 
-    return (solutions)
+    return solutions
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: nqueens N")
         sys.exit(1)
-    if sys.argv[1].isdigit() is False:
+    if not sys.argv[1].isdigit():
         print("N must be a number")
         sys.exit(1)
-    if int(sys.argv[1]) < 4:
+    N = int(sys.argv[1])
+    if N < 4:
         print("N must be at least 4")
         sys.exit(1)
 
-    board = init_board(int(sys.argv[1]))
+    board = init_board(N)
     solutions = recursive_solve(board, 0, 0, [])
     for sol in solutions:
         print(sol)
