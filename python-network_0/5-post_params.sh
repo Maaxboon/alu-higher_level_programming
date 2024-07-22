@@ -1,3 +1,3 @@
 #!/bin/bash
-# sends POST request to given URL for two variables & displays body of response
-curl -sd "email=hr@holbertonschool.com&subject=I will always be here for PLD" "$1"
+# make post request using the 
+curl -s "$1" -X POST -d "email=test@gmail.com&subject=I will always be here for PLD"
