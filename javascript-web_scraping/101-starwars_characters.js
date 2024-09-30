@@ -1,35 +1,29 @@
 #!/usr/bin/node
+const axios = require('axios');
 
-const request = require('request');
-
-// Get the movie ID from the first command-line argument
+// Get the movie ID from the command line argument
 const movieId = process.argv[2];
-const apiUrl = `https://swapi.dev/api/films/${movieId}/`;
 
-// Make the API request to get the movie details
-request(apiUrl, (error, response, body) => {
-  if (error) {
-    console.error('Error:', error)
-    return
-  }
+// Star Wars API URL for movies
+const url = `https://swapi-api.alx-tools.com/api/films/${movieId}`;
 
-  // Parse the response body
-  const filmData = JSON.parse(body)
+// Fetch movie details including characters
+axios.get(url)
+  .then(response => {
+    const characters = response.data.characters;
 
-  // Get the array of character URLs from the movie data
-  const characters = filmData.characters
+    // For each character URL, fetch the character details
+    const characterPromises = characters.map(characterUrl => axios.get(characterUrl));
 
-  // Iterate over each character URL and make a request to get the character name
-  characters.forEach((characterUrl) => {
-    request(characterUrl, (charError, charResponse, charBody) => {
-      if (charError) {
-        console.error('Error:', charError)
-        return
-      }
-
-      // Parse the character data and log the name
-      const characterData = JSON.parse(charBody)
-      console.log(characterData.name)
-    })
+    // Wait for all character details to be fetched
+    return Promise.all(characterPromises);
   })
-})
+  .then(responses => {
+    // Log each character's name
+    responses.forEach(characterResponse => {
+      console.log(characterResponse.data.name);
+    });
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
