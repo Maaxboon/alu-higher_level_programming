@@ -1,29 +1,47 @@
 #!/usr/bin/node
-const axios = require('axios');
+const request = require('request');
 
-// Get the movie ID from the command line argument
+if (process.argv.length !== 3) {
+  console.error('Usage: node 101-starwars_characters.js <Movie ID>');
+  process.exit(1);
+}
+
 const movieId = process.argv[2];
+const apiUrl = `https://swapi.dev/api/films/${movieId}/`;
 
-// Star Wars API URL for movies
-const url = `https://swapi-api.alx-tools.com/api/films/${movieId}`;
+request(apiUrl, (error, response, body) => {
+  if (error || response.statusCode !== 200) {
+    console.error('Error:', error || `Status Code: ${response.statusCode}`);
+    process.exit(1);
+  }
 
-// Fetch movie details including characters
-axios.get(url)
-  .then(response => {
-    const characters = response.data.characters;
+  const film = JSON.parse(body);
 
-    // For each character URL, fetch the character details
-    const characterPromises = characters.map(characterUrl => axios.get(characterUrl));
+  if (!film || !film.characters || film.characters.length === 0) {
+    console.error('No characters found for the specified movie ID.');
+    process.exit(1);
+  }
 
-    // Wait for all character details to be fetched
-    return Promise.all(characterPromises);
-  })
-  .then(responses => {
-    // Log each character's name
-    responses.forEach(characterResponse => {
-      console.log(characterResponse.data.name);
+  const charactersUrls = film.characters;
+  const charactersPromises = charactersUrls.map(url => {
+    return new Promise((resolve, reject) => {
+      request(url, (error, response, body) => {
+        if (error || response.statusCode !== 200) {
+          reject(error || `Status Code: ${response.statusCode}`);
+        } else {
+          const character = JSON.parse(body);
+          resolve(character.name);
+        }
+      });
     });
-  })
-  .catch(error => {
-    console.error('Error:', error);
   });
+
+  Promise.all(charactersPromises)
+    .then(characters => {
+      characters.forEach(character => console.log(character));
+    })
+    .catch(error => {
+      console.error('Error fetching character:', error);
+      process.exit(1);
+    });
+});
